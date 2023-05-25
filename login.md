@@ -85,3 +85,37 @@ app.post("/user", createNewUser);
 ```
 
 ## 登录
+
+```ts
+// modules/user.ts
+export const comparePasswords = (password: string, hash: string) => {
+  return bcrypt.compare(password, hash);
+};
+```
+
+```ts
+// handles/user.ts
+export const signin: RequestHandler = async (req, res) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      username: req.body.username,
+    },
+  });
+
+  const isValid = await comparePasswords(req.body.password, user.password);
+
+  if (!isValid) {
+    res.status(401);
+    res.json({ message: "nope" });
+    return;
+  }
+
+  const token = createJWT(user);
+  res.json({ token });
+};
+```
+
+```ts
+// server.ts
+app.post("/signin", signin);
+```
