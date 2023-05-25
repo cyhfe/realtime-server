@@ -119,3 +119,28 @@ export const signin: RequestHandler = async (req, res) => {
 // server.ts
 app.post("/signin", signin);
 ```
+
+## 路由保护
+
+```ts
+// server.ts
+app.use("/api", protect, router);
+```
+
+### 如何使 token 失效
+
+更换签发密钥
+
+### How to extend the Express Request object in TypeScript
+
+[https://blog.logrocket.com/extend-express-request-object-typescript/](https://blog.logrocket.com/extend-express-request-object-typescript/)
+
+[https://stackoverflow.com/questions/71122741/how-do-i-add-custom-property-to-express-request-in-typescript](https://stackoverflow.com/questions/71122741/how-do-i-add-custom-property-to-express-request-in-typescript)
+
+```ts
+declare module "express-serve-static-core" {
+  interface Request {
+    myProp?: boolean;
+  }
+}
+```
