@@ -44,7 +44,6 @@ export const protect = (req: Request, res: Response, next: NextFunction) => {
 
   try {
     const user = jwt.verify(token, JWT_SECRET) as UserPayload;
-    // @ts-ignore
     req.user = user;
     next();
   } catch (e) {
