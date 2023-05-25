@@ -2,6 +2,7 @@ import express from "express";
 import router from "./router";
 import morgan from "morgan";
 import cors from "cors";
+import { createNewUser } from "./handlers/user";
 
 const app = express();
 
@@ -10,7 +11,9 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/api", router);
+app.post("/user", createNewUser);
+// app.use("/api", protect, router);
+// app.post("/signin", signin);
 // @ts-ignore
 app.use((err, req, res, next) => {
   console.log(err);

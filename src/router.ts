@@ -1,7 +1,9 @@
 import { Router } from "express";
+import prisma from "./db";
 const router = Router();
 
-router.get("/", (req, res) => {
-  res.json({ msg: "hello " });
+router.get("/", async (req, res) => {
+  const users = await prisma.user.findMany();
+  res.json({ users });
 });
 export default router;
