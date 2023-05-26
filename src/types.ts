@@ -1,6 +1,8 @@
+export type Role = "ADMIN" | "MEMBER";
 export interface UserPayload {
-  id: string;
+  id: number;
   username: string;
+  role: Role;
   iat: number;
 }
 

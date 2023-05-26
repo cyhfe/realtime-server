@@ -19,6 +19,7 @@ export const createJWT = (user: User) => {
     {
       id: user.id,
       username: user.username,
+      role: user.role,
     },
     JWT_SECRET
   );
@@ -46,6 +47,40 @@ export const protect = (req: Request, res: Response, next: NextFunction) => {
     const user = jwt.verify(token, JWT_SECRET) as UserPayload;
     req.user = user;
     next();
+  } catch (e) {
+    console.error(e);
+    res.status(401);
+    res.json({ message: "not valid token" });
+    return;
+  }
+};
+
+export const permission = (req: Request, res: Response, next: NextFunction) => {
+  const bearer = req.headers.authorization;
+
+  if (!bearer) {
+    res.status(401);
+    res.json({ message: "not valid token" });
+    return;
+  }
+
+  const [, token] = bearer.split(" ");
+
+  if (!token) {
+    res.status(401);
+    res.json({ message: "not valid token" });
+    return;
+  }
+
+  try {
+    const user = jwt.verify(token, JWT_SECRET) as UserPayload;
+    if (user.role === "ADMIN") {
+      return next();
+    } else {
+      res.status(401);
+      res.json({ message: "admin only" });
+      return;
+    }
   } catch (e) {
     console.error(e);
     res.status(401);
