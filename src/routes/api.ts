@@ -1,10 +1,19 @@
-import { Router } from "express";
+import { RequestHandler, Router } from "express";
 import prisma from "../db";
 import { UserPayload } from "../types";
 import { Request, Response, NextFunction } from "express";
 import { getAllUsers, getUserById } from "../handlers/user";
 import { permission } from "../modules/auth";
+import { validationResult } from "express-validator";
 const router = Router();
+
+const inputValidate: RequestHandler = function (req, res, next) {
+  const result = validationResult(req);
+  if (!result.isEmpty()) {
+    return res.send({ errors: result.array(), code: 400 });
+  }
+  next();
+};
 
 /**
  * User
