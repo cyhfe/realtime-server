@@ -2,7 +2,7 @@ import { Router } from "express";
 import prisma from "../db";
 import { UserPayload } from "../types";
 import { Request, Response, NextFunction } from "express";
-import { getAllUsers } from "../handlers/user";
+import { getAllUsers, getUserById } from "../handlers/user";
 import { permission } from "../modules/auth";
 const router = Router();
 
@@ -10,6 +10,7 @@ const router = Router();
  * User
  */
 router.get("/user", permission, getAllUsers);
+router.get("/user/:id", permission, getUserById);
 
 router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.log(err);

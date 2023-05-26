@@ -2,6 +2,17 @@ import { RequestHandler } from "express";
 import prisma from "../db";
 import { comparePasswords, createJWT, hashPassword } from "../modules/auth";
 
+// Exclude keys from user
+function exclude<User, Key extends keyof User>(
+  user: User,
+  keys: Key[]
+): Omit<User, Key> {
+  for (let key of keys) {
+    delete user[key];
+  }
+  return user;
+}
+
 export const createNewUser: RequestHandler = async (req, res, next) => {
   try {
     const user = await prisma.user.create({
@@ -48,7 +59,36 @@ export const signin: RequestHandler = async (req, res, next) => {
 export const getAllUsers: RequestHandler = async (req, res, next) => {
   try {
     const users = await prisma.user.findMany();
-    res.json({ users });
+    if (!users.length) {
+      return res.json({
+        msg: "no users",
+        code: 404,
+      });
+    }
+    const usersWithoutPassword = [];
+    for (let user of users) {
+      const userWithoutPassword = exclude(user, ["password"]);
+      usersWithoutPassword.push(userWithoutPassword);
+    }
+    res.json({ users: usersWithoutPassword });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getUserById: RequestHandler = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+    if (!user) {
+      return res.json({ meg: "not found", code: 404 });
+    }
+    const userWithoutPassword = exclude(user, ["password"]);
+    res.json({ user: userWithoutPassword });
   } catch (error) {
     next(error);
   }
