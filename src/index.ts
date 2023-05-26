@@ -2,7 +2,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 import app from "./server";
 
-app.listen(3001, () => {
+app.listen(process.env.PORT ?? 3000, () => {
   console.log("serve on http://localhost:3001");
 });
 

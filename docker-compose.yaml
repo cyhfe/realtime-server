@@ -1,0 +1,12 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 4000:4000
+    volumes:
+      - sqlite-data:/code/prisma/
+
+volumes:
+  sqlite-data:
