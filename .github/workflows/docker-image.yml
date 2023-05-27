@@ -20,4 +20,4 @@ jobs:
         JWT_SECRET: ${{ secrets.JWT_SECRET }}
         ADMIN_SECRET: ${{ secrets.ADMIN_SECRET }}
         PORT: ${{ secrets.PORT }}
-      run: sudo docker compose -p api up --build -d
+      run: echo ${DATABASE_URL}
