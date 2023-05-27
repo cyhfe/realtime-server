@@ -1,11 +1,13 @@
 import * as dotenv from "dotenv";
-dotenv.config();
 import app from "./server";
 
-const PORT = process.env.PORT ?? 3000;
+dotenv.config();
 
-app.listen(PORT ?? 3000, () => {
-  console.log("serve on http://localhost:" + PORT);
+const port = process.env.PORT;
+console.log(port);
+
+app.listen(port, () => {
+  console.log("serve on http://localhost:" + port);
 });
 
 process.on("uncaughtException", (error) => {

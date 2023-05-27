@@ -1,20 +1,8 @@
 FROM node:18-alpine
-
+ENV PORT=3002
 WORKDIR /app
-
-RUN npm i pnpm -g
-
-COPY ["package.json", "package-lock.json*", "./"]
-
-RUN pnpm install
-
-ADD . .
-
-
-RUN npx prisma generate
-
-COPY tsconfig.json ./
-
-RUN tsc 
-
-CMD ["node", "dist/server.js"]
+COPY . .
+RUN npm install
+RUN npm run build
+CMD ["node", "dist/index.js"]
+EXPOSE 3002
