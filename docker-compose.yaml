@@ -9,3 +9,8 @@ services:
       - DATABASE_URL=${DATABASE_URL}
       - JWT_SECRET=${JWT_SECRET}
       - ADMIN_SECRET=${ADMIN_SECRET}
+    volumes:
+      - api:/app/prisma
+
+volumes:
+  api:
