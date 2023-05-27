@@ -15,4 +15,7 @@ jobs:
         run: |
           touch .env
           echo PORT=${{secrets.PORT}} >> .env
+          echo DATABASE_URL=${{secrets.DATABASE_URL}} >> .env
+          echo JWT_SECRET=${{secrets.JWT_SECRET}} >> .env
+          echo ADMIN_SECRET=${{secrets.ADMIN_SECRET}} >> .env
           sudo docker compose config
