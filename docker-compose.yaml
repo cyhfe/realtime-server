@@ -4,3 +4,8 @@ services:
     ports:
       - 4000:4000
     working_dir: /app
+    environment:
+      - PORT=${PORT}
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - ADMIN_SECRET=${ADMIN_SECRET}
