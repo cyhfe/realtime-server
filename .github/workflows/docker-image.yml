@@ -15,9 +15,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      env:
-        DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        JWT_SECRET: ${{ secrets.JWT_SECRET }}
-        ADMIN_SECRET: ${{ secrets.ADMIN_SECRET }}
-        PORT: ${{ secrets.PORT }}
-      run: echo ${DATABASE_URL}
+      run: sudo docker compose -p api up --build -d -e DATABASE_URL=${{ secrets.DATABASE_URL }} -e JWT_SECRET=${{ secrets.DATABASE_URL }} -e ADMIN_SECRET=${{ secrets.ADMIN_SECRET }} -e PORT=${{ secrets.PORT }} 
