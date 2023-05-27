@@ -15,7 +15,8 @@ function exclude<User, Key extends keyof User>(
 
 export const createNewUser: RequestHandler = async (req, res, next) => {
   const ADMIN_SECRET = process.env.ADMIN_SECRET as string;
-  const isAdmin = (req.body.secrets = ADMIN_SECRET);
+  const isAdmin = req.body.secrets === ADMIN_SECRET;
+  console.log(ADMIN_SECRET, req.body.secrets);
   try {
     const user = await prisma.user.create({
       data: {
