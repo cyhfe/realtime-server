@@ -1,26 +1,20 @@
-FROM node:18-alpine 
+FROM node:18-alpine
 
-ARG NODE_ENV=production
+WORKDIR /app
 
-WORKDIR /code
+RUN npm i pnpm -g
 
-EXPOSE 4000
+COPY ["package.json", "package-lock.json*", "./"]
 
-COPY package.json /code/package.json
-COPY package-lock.json /code/package-lock.json
+RUN pnpm install
 
-RUN npm install
+ADD . .
 
-ADD prisma /code/prisma
 
-ENV DATABASE_URL="file:./dev.db"
-
-RUN npx prisma migrate deploy 
 RUN npx prisma generate
 
-COPY . .
+COPY tsconfig.json ./
 
-RUN npm run build
+RUN tsc 
 
-RUN npm start
- 
+CMD ["node", "dist/server.js"]
