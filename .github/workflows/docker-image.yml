@@ -12,4 +12,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: sudo docker compose -p api up --build -d -e DATABASE_URL=${{ secrets.DATABASE_URL }} -e JWT_SECRET=${{ secrets.DATABASE_URL }} -e ADMIN_SECRET=${{ secrets.ADMIN_SECRET }} -e PORT=${{ secrets.PORT }} 
+      run: |
+        export "port=${{secrets.PORT}}"
+        sudo docker compose config
+
