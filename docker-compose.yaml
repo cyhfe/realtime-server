@@ -2,7 +2,7 @@ services:
   app:
     build: .
     ports:
-      - 4001:4001
+      - 4000:4000
     working_dir: /app
     environment:
       - PORT=${PORT}
