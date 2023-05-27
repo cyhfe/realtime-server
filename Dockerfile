@@ -1,8 +1,16 @@
 FROM node:18-alpine
-ENV PORT=3002
+ENV PORT=3003
+ENV DATABASE_URL="file:./dev.db"
+ENV JWT_SECRET=123
+ENV ADMIN_SECRET=1234
 WORKDIR /app
-COPY . .
+
+COPY package.json package*.json ./
 RUN npm install
+
+COPY . .
+
+RUN npx prisma generate
 RUN npm run build
-CMD ["node", "dist/index.js"]
-EXPOSE 3002
+CMD ["npm", "start"]
+EXPOSE 3003

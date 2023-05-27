@@ -13,22 +13,18 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// app.post(
-//   "/user",
-//   body(["password", "username"]).notEmpty(),
-//   inputValidate,
-//   createNewUser
-// );
-// app.post("/signin", signin);
+app.post(
+  "/user",
+  body(["password", "username"]).notEmpty(),
+  inputValidate,
+  createNewUser
+);
+app.post("/signin", signin);
 
-// app.use("/api", protect, router);
-
-// app.use("*", (req, res) => {
-//   res.json({ message: `had an error`, code: 404 });
-// });
+app.use("/api", protect, router);
 
 app.use("*", (req, res) => {
-  res.json({ message: "hello" });
+  res.json({ message: `had an error`, code: 404 });
 });
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

@@ -2,5 +2,5 @@ services:
   app:
     build: .
     ports:
-      - 3002:3002
+      - 3003:3003
     working_dir: /app
