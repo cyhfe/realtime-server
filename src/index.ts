@@ -4,7 +4,6 @@ import app from "./server";
 dotenv.config();
 
 const port = process.env.PORT;
-console.log(port);
 
 app.listen(port, () => {
   console.log("serve on http://localhost:" + port);
@@ -17,5 +16,3 @@ process.on("uncaughtException", (error) => {
 process.on("unhandledRejection", (error) => {
   console.log(error);
 });
-
-console.log("test4");
