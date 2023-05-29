@@ -8,6 +8,8 @@ import { body } from "express-validator";
 import { inputValidate } from "./utils/inputValidate";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import jwt from "jsonwebtoken";
+
 const app = express();
 
 app.use(cors());
@@ -46,8 +48,33 @@ const io = new Server(httpServer, {
   },
 });
 
+const onlineList = new Set();
+
 io.on("connection", (socket) => {
-  console.log("connect");
+  const token = socket.handshake.auth.token;
+  const JWT_SECRET = process.env.JWT_SECRET as string;
+  const user = jwt.verify(token, JWT_SECRET);
+  onlineList.add(user);
+  const onlineListJSON = JSON.stringify(Array.from(onlineList));
+  io.emit("chat/updateOnlineList", onlineListJSON);
+  console.log("connect", onlineListJSON);
+
+  socket.on("disconnect", () => {
+    onlineList.delete(user);
+    const onlineListJSON = JSON.stringify(Array.from(onlineList));
+    io.emit("chat/updateOnlineList", onlineListJSON);
+    console.log("disconnect", onlineListJSON);
+  });
+  // socket.on("chat/connect", (user) => {
+  //   console.log("chat/connect", user);
+  //   onlineList.add(user);
+  //   socket.emit("chat/updateOnlineList", onlineList);
+  // });
+  // socket.on("chat/disconnect", (user) => {
+  //   console.log("chat/disconnect", user);
+  //   onlineList.delete(user);
+  //   socket.emit("chat/updateOnlineList", onlineList);
+  // });
 });
 
 export default httpServer;
