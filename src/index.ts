@@ -1,11 +1,11 @@
 import * as dotenv from "dotenv";
-import app from "./server";
+import httpServer from "./server";
 
 dotenv.config();
 
 const port = process.env.PORT;
 
-app.listen(port, () => {
+httpServer.listen(port, () => {
   console.log("serve on http://localhost:" + port);
 });
 

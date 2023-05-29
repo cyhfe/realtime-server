@@ -6,6 +6,8 @@ import { createNewUser, signin, me } from "./handlers/user";
 import { protect } from "./modules/auth";
 import { body } from "express-validator";
 import { inputValidate } from "./utils/inputValidate";
+import { createServer } from "http";
+import { Server } from "socket.io";
 const app = express();
 
 app.use(cors());
@@ -27,7 +29,8 @@ app.post("/me", body(["token"]).notEmpty(), inputValidate, me);
 app.use("/api", protect, router);
 
 app.use("*", (req, res) => {
-  res.json({ message: `had an error`, code: 404 });
+  res.status(404);
+  res.json({ message: `had an error` });
 });
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
@@ -36,4 +39,15 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.json({ message: `had an error` });
 });
 
-export default app;
+const httpServer = createServer(app);
+const io = new Server(httpServer, {
+  cors: {
+    origin: "*",
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("connect");
+});
+
+export default httpServer;
