@@ -9,6 +9,7 @@ import { inputValidate } from "./utils/inputValidate";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
+import { log } from "console";
 
 const app = express();
 
@@ -51,30 +52,19 @@ const io = new Server(httpServer, {
 const onlineList = new Set();
 
 io.on("connection", (socket) => {
-  const token = socket.handshake.auth.token;
-  const JWT_SECRET = process.env.JWT_SECRET as string;
-  const user = jwt.verify(token, JWT_SECRET);
+  const user = socket.handshake.auth.user;
   onlineList.add(user);
-  const onlineListJSON = JSON.stringify(Array.from(onlineList));
+  const onlineListJSON = Array.from(onlineList);
   io.emit("chat/updateOnlineList", onlineListJSON);
   console.log("connect", onlineListJSON);
 
   socket.on("disconnect", () => {
     onlineList.delete(user);
-    const onlineListJSON = JSON.stringify(Array.from(onlineList));
+    // console.log(onlineList, "delete");
+    const onlineListJSON = Array.from(onlineList);
     io.emit("chat/updateOnlineList", onlineListJSON);
     console.log("disconnect", onlineListJSON);
   });
-  // socket.on("chat/connect", (user) => {
-  //   console.log("chat/connect", user);
-  //   onlineList.add(user);
-  //   socket.emit("chat/updateOnlineList", onlineList);
-  // });
-  // socket.on("chat/disconnect", (user) => {
-  //   console.log("chat/disconnect", user);
-  //   onlineList.delete(user);
-  //   socket.emit("chat/updateOnlineList", onlineList);
-  // });
 });
 
 export default httpServer;
