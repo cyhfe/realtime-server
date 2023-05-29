@@ -2,7 +2,7 @@ import express, { NextFunction, Request, Response } from "express";
 import router from "./routes/api";
 import morgan from "morgan";
 import cors from "cors";
-import { createNewUser, signin } from "./handlers/user";
+import { createNewUser, signin, me } from "./handlers/user";
 import { protect } from "./modules/auth";
 import { body } from "express-validator";
 import { inputValidate } from "./utils/inputValidate";
@@ -19,7 +19,10 @@ app.post(
   inputValidate,
   createNewUser
 );
+
 app.post("/signin", signin);
+
+app.post("/me", body(["token"]).notEmpty(), inputValidate, me);
 
 app.use("/api", protect, router);
 
@@ -29,7 +32,8 @@ app.use("*", (req, res) => {
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.log(err);
-  res.json({ message: `had an error`, code: 500 });
+  res.status(500);
+  res.json({ message: `had an error` });
 });
 
 export default app;
