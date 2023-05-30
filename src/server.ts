@@ -114,7 +114,7 @@ io.on("connection", (socket) => {
     const users = data.map((socket) => {
       return JSON.parse(socket.handshake.auth.user) as User;
     });
-    console.log("enter", users);
+
 
     socket.broadcast.to(chanelId).emit("chat/enterChanel", user);
     io.to(chanelId).emit("chat/updateChanelUsers", users);
@@ -135,7 +135,7 @@ io.on("connection", (socket) => {
       return JSON.parse(socket.handshake.auth.user) as User;
     });
 
-    console.log("le", users);
+
 
     socket.broadcast.to(chanelId).emit("chat/leaveChanel", user);
     socket.broadcast.to(chanelId).emit("chat/updateChanelUsers", users);
