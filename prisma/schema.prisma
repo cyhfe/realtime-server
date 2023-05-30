@@ -23,8 +23,8 @@ model User {
   ChanelMessage ChanelMessage[]
   Chanel        Chanel[]
 
-  privateRoom    PrivateRoom?
-  PrivateMessage PrivateMessage[]
+  privateRoom     PrivateRoom?
+  privateMessages PrivateMessage[]
 }
 
 model ChanelMessage {
@@ -34,10 +34,13 @@ model ChanelMessage {
   from       User     @relation(fields: [fromUserId], references: [id])
   toChanelId String
   to         Chanel   @relation(fields: [toChanelId], references: [id])
+  read       Boolean  @default(false)
+  content    String
 }
 
 model Chanel {
   id        String          @id @default(uuid())
+  name      String          @unique
   createdAt DateTime        @default(now())
   userId    String
   belongsTo User            @relation(fields: [userId], references: [id])
@@ -49,8 +52,9 @@ model PrivateMessage {
   createdAt  DateTime    @default(now())
   fromUserId String
   from       User        @relation(fields: [fromUserId], references: [id])
-  toRoomId   String
-  to         PrivateRoom @relation(fields: [toRoomId], references: [id])
+  toUserId   String
+  to         PrivateRoom @relation(fields: [toUserId], references: [userId])
+  content    String
 }
 
 model PrivateRoom {

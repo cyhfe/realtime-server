@@ -47,6 +47,12 @@ export const createNewUser: RequestHandler = async (req, res, next) => {
       },
     });
 
+    await prisma.privateRoom.create({
+      data: {
+        userId: user.id,
+      },
+    });
+
     const token = createJWT(user);
     const userWithoutPassword = exclude(user, ["password"]);
     res.status(200);
