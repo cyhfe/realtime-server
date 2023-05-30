@@ -50,21 +50,78 @@ const io = new Server(httpServer, {
   },
 });
 
-const onlineList = new Set();
-
 interface User {
   username: string;
   id: string;
 }
+const onlineList = new Set<User>();
 
 io.on("connection", (socket) => {
+  function updateOnlineList() {
+    const onlineListJSON = JSON.stringify(Array.from(onlineList));
+    socket.emit("chat/updateOnlineList", onlineListJSON);
+  }
+
+  async function createChanel(channelName: string) {
+    const existChanel = await prisma.chanel.findUnique({
+      where: {
+        name: channelName,
+      },
+    });
+    if (existChanel) {
+      socket.emit("chat/error", "该频道名已被使用");
+      return;
+    }
+    await prisma.chanel.create({
+      data: {
+        name: channelName,
+        userId: user.id,
+      },
+    });
+    const chanel = await prisma.chanel.findMany();
+    socket.emit("chat/updateChanel", chanel);
+  }
+
+  async function updateUsers() {
+    const users = await prisma.user.findMany();
+    console.log(users);
+    socket.emit("chat/updateUsers", users);
+  }
+
+  async function updateChanels() {
+    const chanels = await prisma.chanel.findMany();
+    socket.emit("chat/updateChanels", chanels);
+  }
+  async function updatePrivateMessages(to: string) {
+    const privateMessages = await prisma.privateMessage.findMany({
+      where: {
+        OR: [
+          {
+            fromUserId: user.id,
+            toUserId: to,
+          },
+          {
+            fromUserId: to,
+            toUserId: user.id,
+          },
+        ],
+      },
+    });
+    socket.emit("chat/updatePrivateMessages", privateMessages);
+  }
+
   const user = JSON.parse(socket.handshake.auth.user) as User;
   onlineList.add(user);
+  socket.join(user.id);
   const onlineListJSON = JSON.stringify(Array.from(onlineList));
   io.emit("chat/updateOnlineList", onlineListJSON);
-  console.log("connect", onlineListJSON);
 
-  socket.join(user.id);
+  socket.on("chat/updateOnlineList", updateOnlineList);
+  socket.on("chat/createChanel", createChanel);
+  socket.on("chat/updateUsers", updateUsers);
+  socket.on("chat/updateChanels", updateChanels);
+  socket.on("chat/updatePrivateMessages", updatePrivateMessages);
+
   socket.on(
     "chat/privateMessage",
     async ({ content, to }: { content: string; to: string }) => {
@@ -96,7 +153,6 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     onlineList.delete(user);
-    // console.log(onlineList, "delete");
     const onlineListJSON = JSON.stringify(Array.from(onlineList));
     io.emit("chat/updateOnlineList", onlineListJSON);
     console.log("disconnect", onlineListJSON);
