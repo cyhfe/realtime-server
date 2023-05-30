@@ -117,7 +117,7 @@ io.on("connection", (socket) => {
         toChanelId: chanelId,
       },
     });
-    socket.emit("chat/getChanelMessages", messages);
+    socket.emit("chat/updateChanelMessages", messages);
   }
 
   async function onGetChanel(chanelId: string) {
@@ -127,6 +127,30 @@ io.on("connection", (socket) => {
       },
     });
     socket.emit("chat/getChanel", chanel);
+  }
+
+  async function onChanelMessage({
+    chanelId,
+    content,
+  }: {
+    chanelId: string;
+    content: string;
+  }) {
+    await prisma.chanelMessage.create({
+      data: {
+        fromUserId: user.id,
+        toChanelId: chanelId,
+        content,
+      },
+    });
+
+    const messages = await prisma.chanelMessage.findMany({
+      where: {
+        toChanelId: chanelId,
+      },
+    });
+
+    io.to(chanelId).emit("chat/updateChanelMessages", messages);
   }
 
   const user = JSON.parse(socket.handshake.auth.user) as User;
@@ -170,6 +194,7 @@ io.on("connection", (socket) => {
   );
   socket.on("chat/enterChanel", onEnterChanel);
   socket.on("chat/getChanel", onGetChanel);
+  socket.on("chat/chanelMessage", onChanelMessage);
 
   socket.on("disconnect", () => {
     onlineList.delete(user);
