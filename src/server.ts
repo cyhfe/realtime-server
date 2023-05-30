@@ -109,8 +109,15 @@ io.on("connection", (socket) => {
   }
 
   async function onEnterChanel(chanelId: string) {
-    socket.join(chanelId);
+    await socket.join(chanelId);
+    const data = await io.in(chanelId).fetchSockets();
+    const users = data.map((socket) => {
+      return JSON.parse(socket.handshake.auth.user) as User;
+    });
+    console.log("enter", users);
+
     socket.broadcast.to(chanelId).emit("chat/enterChanel", user);
+    io.to(chanelId).emit("chat/updateChanelUsers", users);
 
     const messages = await prisma.chanelMessage.findMany({
       where: {
@@ -118,6 +125,20 @@ io.on("connection", (socket) => {
       },
     });
     socket.emit("chat/updateChanelMessages", messages);
+  }
+
+  async function onLeaveChanel(chanelId: string) {
+    await socket.leave(chanelId);
+    const data = await io.in(chanelId).fetchSockets();
+
+    const users = data.map((socket) => {
+      return JSON.parse(socket.handshake.auth.user) as User;
+    });
+
+    console.log("le", users);
+
+    socket.broadcast.to(chanelId).emit("chat/leaveChanel", user);
+    socket.broadcast.to(chanelId).emit("chat/updateChanelUsers", users);
   }
 
   async function onGetChanel(chanelId: string) {
@@ -193,6 +214,7 @@ io.on("connection", (socket) => {
     }
   );
   socket.on("chat/enterChanel", onEnterChanel);
+  socket.on("chat/leaveChanel", onLeaveChanel);
   socket.on("chat/getChanel", onGetChanel);
   socket.on("chat/chanelMessage", onChanelMessage);
 
