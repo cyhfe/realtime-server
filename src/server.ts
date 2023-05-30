@@ -78,19 +78,17 @@ io.on("connection", (socket) => {
         userId: user.id,
       },
     });
-    const chanel = await prisma.chanel.findMany();
-    socket.emit("chat/updateChanel", chanel);
+    updateChanels();
   }
 
   async function updateUsers() {
     const users = await prisma.user.findMany();
-    console.log(users);
     socket.emit("chat/updateUsers", users);
   }
 
   async function updateChanels() {
     const chanels = await prisma.chanel.findMany();
-    socket.emit("chat/updateChanels", chanels);
+    io.emit("chat/updateChanels", chanels);
   }
   async function updatePrivateMessages(to: string) {
     const privateMessages = await prisma.privateMessage.findMany({
@@ -110,6 +108,27 @@ io.on("connection", (socket) => {
     socket.emit("chat/updatePrivateMessages", privateMessages);
   }
 
+  async function onEnterChanel(chanelId: string) {
+    socket.join(chanelId);
+    socket.broadcast.to(chanelId).emit("chat/enterChanel", user);
+
+    const messages = await prisma.chanelMessage.findMany({
+      where: {
+        toChanelId: chanelId,
+      },
+    });
+    socket.emit("chat/getChanelMessages", messages);
+  }
+
+  async function onGetChanel(chanelId: string) {
+    const chanel = await prisma.chanel.findUnique({
+      where: {
+        id: chanelId,
+      },
+    });
+    socket.emit("chat/getChanel", chanel);
+  }
+
   const user = JSON.parse(socket.handshake.auth.user) as User;
   onlineList.add(user);
   socket.join(user.id);
@@ -121,7 +140,6 @@ io.on("connection", (socket) => {
   socket.on("chat/updateUsers", updateUsers);
   socket.on("chat/updateChanels", updateChanels);
   socket.on("chat/updatePrivateMessages", updatePrivateMessages);
-
   socket.on(
     "chat/privateMessage",
     async ({ content, to }: { content: string; to: string }) => {
@@ -150,12 +168,13 @@ io.on("connection", (socket) => {
       io.to([to, user.id]).emit("chat/updatePrivateMessages", privateMessages);
     }
   );
+  socket.on("chat/enterChanel", onEnterChanel);
+  socket.on("chat/getChanel", onGetChanel);
 
   socket.on("disconnect", () => {
     onlineList.delete(user);
     const onlineListJSON = JSON.stringify(Array.from(onlineList));
     io.emit("chat/updateOnlineList", onlineListJSON);
-    console.log("disconnect", onlineListJSON);
   });
 });
 
