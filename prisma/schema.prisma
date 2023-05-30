@@ -1,6 +1,10 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
+// npx prisma migrate dev --name chat
+// npx prisma generate
+// npx prisma studio
+
 generator client {
   provider = "prisma-client-js"
 }

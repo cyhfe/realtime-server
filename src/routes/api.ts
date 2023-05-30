@@ -18,8 +18,8 @@ const inputValidate: RequestHandler = function (req, res, next) {
 /**
  * User
  */
-router.get("/user", permission, getAllUsers);
-router.get("/user/:id", permission, getUserById);
+router.get("/user", getAllUsers);
+router.get("/user/:id", getUserById);
 
 router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.log(err);
