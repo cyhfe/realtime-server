@@ -59,7 +59,6 @@ const onlineList = new Set<User>();
 const chatSocket = io.of("/chat");
 
 chatSocket.on("connection", (socket) => {
-  console.log("connection");
   function updateOnlineList() {
     const onlineListJSON = JSON.stringify(Array.from(onlineList));
     socket.emit("chat/updateOnlineList", onlineListJSON);
@@ -228,4 +227,8 @@ chatSocket.on("connection", (socket) => {
   });
 });
 
+const canvasSocket = io.of("/canvas");
+canvasSocket.on("connection", (socket) => {
+  socket.on("drawing", (data) => socket.broadcast.emit("drawing", data));
+});
 export default httpServer;
