@@ -131,9 +131,9 @@ chatSocket.on("connection", (socket) => {
 
   async function onLeaveChannel(channelId: string) {
     await socket.leave(channelId);
-    const data = await chatSocket.in(channelId).fetchSockets();
+    const sockets = await chatSocket.in(channelId).fetchSockets();
 
-    const users = data.map((socket) => {
+    const users = sockets.map((socket) => {
       return JSON.parse(socket.handshake.auth.user) as User;
     });
 
@@ -230,5 +230,9 @@ chatSocket.on("connection", (socket) => {
 const canvasSocket = io.of("/canvas");
 canvasSocket.on("connection", (socket) => {
   socket.on("drawing", (data) => socket.broadcast.emit("drawing", data));
+  socket.on("clear", () => socket.broadcast.emit("clear"));
+  socket.on("changeStrokeColor", (data) =>
+    socket.broadcast.emit("changeStrokeColor", data)
+  );
 });
 export default httpServer;
