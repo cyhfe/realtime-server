@@ -15,45 +15,46 @@ datasource db {
 }
 
 model User {
-  id            String          @id @default(uuid())
-  createdAt     DateTime        @default(now())
-  role          String          @default("MEMBER")
-  username      String          @unique
-  password      String
-  ChanelMessage ChanelMessage[]
-  Chanel        Chanel[]
+  id              String           @id @default(uuid())
+  createdAt       DateTime         @default(now())
+  role            String           @default("MEMBER")
+  username        String           @unique
+  password        String
+  channelMessages ChannelMessage[]
+  channels        Channel[]
 
   privateRoom     PrivateRoom?
   privateMessages PrivateMessage[]
 }
 
-model ChanelMessage {
-  id         String   @id @default(uuid())
-  createdAt  DateTime @default(now())
-  fromUserId String
-  from       User     @relation(fields: [fromUserId], references: [id])
-  toChanelId String
-  to         Chanel   @relation(fields: [toChanelId], references: [id])
-  read       Boolean  @default(false)
-  content    String
+model ChannelMessage {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  fromUserId  String
+  from        User     @relation(fields: [fromUserId], references: [id], onDelete: Cascade)
+  toChannelId String
+  to          Channel  @relation(fields: [toChannelId], references: [id], onDelete: Cascade)
+  read        Boolean  @default(false)
+  content     String
 }
 
-model Chanel {
-  id        String          @id @default(uuid())
-  name      String          @unique
-  createdAt DateTime        @default(now())
-  userId    String
-  belongsTo User            @relation(fields: [userId], references: [id])
-  messages  ChanelMessage[]
+model Channel {
+  id           String           @id @default(uuid())
+  name         String           @unique
+  createdAt    DateTime         @default(now())
+  userId       String
+  belongsTo    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages     ChannelMessage[]
+  channelBoard ChannelBoard?
 }
 
 model PrivateMessage {
   id         String      @id @default(uuid())
   createdAt  DateTime    @default(now())
   fromUserId String
-  from       User        @relation(fields: [fromUserId], references: [id])
+  from       User        @relation(fields: [fromUserId], references: [id], onDelete: Cascade)
   toUserId   String
-  to         PrivateRoom @relation(fields: [toUserId], references: [userId])
+  to         PrivateRoom @relation(fields: [toUserId], references: [userId], onDelete: Cascade)
   content    String
 }
 
@@ -61,6 +62,55 @@ model PrivateRoom {
   id              String           @id @default(uuid())
   createdAt       DateTime         @default(now())
   userId          String           @unique
-  belongsTo       User             @relation(fields: [userId], references: [id])
+  belongsTo       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   privateMessages PrivateMessage[]
+  privateBoard    PrivateBoard?
+}
+
+model ChannelBoard {
+  id             String          @id @default(uuid())
+  createdAt      DateTime        @default(now())
+  channelId      String          @unique
+  channel        Channel         @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  history        Int             @default(0)
+  channelStrokes ChannelStroke[]
+}
+
+model ChannelStroke {
+  id             String         @id @default(uuid())
+  points         ChannelPoint[]
+  channelBoardId String
+  channelBoard   ChannelBoard   @relation(fields: [channelBoardId], references: [id], onDelete: Cascade)
+}
+
+model ChannelPoint {
+  id            String        @id @default(uuid())
+  x             Int
+  y             Int
+  strokeId      String
+  channelStroke ChannelStroke @relation(fields: [strokeId], references: [id], onDelete: Cascade)
+}
+
+model PrivateBoard {
+  id             String          @id @default(uuid())
+  createdAt      DateTime        @default(now())
+  privateRoomId  String          @unique
+  privateRoom    PrivateRoom     @relation(fields: [privateRoomId], references: [id], onDelete: Cascade)
+  history        Int             @default(0)
+  privateStrokes PrivateStroke[]
+}
+
+model PrivateStroke {
+  id             String         @id @default(uuid())
+  points         PrivatePoint[]
+  privateBoardId String
+  privateBoard   PrivateBoard   @relation(fields: [privateBoardId], references: [id], onDelete: Cascade)
+}
+
+model PrivatePoint {
+  id            String        @id @default(uuid())
+  x             Int
+  y             Int
+  strokeId      String
+  privateStroke PrivateStroke @relation(fields: [strokeId], references: [id], onDelete: Cascade)
 }

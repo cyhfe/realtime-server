@@ -44,14 +44,17 @@ export const createNewUser: RequestHandler = async (req, res, next) => {
         username: req.body.username,
         password: await hashPassword(req.body.password),
         role: isAdmin ? "ADMIN" : "MEMBER",
+        privateRoom: {
+          create: {},
+        },
       },
     });
 
-    await prisma.privateRoom.create({
-      data: {
-        userId: user.id,
-      },
-    });
+    // await prisma.privateRoom.create({
+    //   data: {
+    //     userId: user.id,
+    //   },
+    // });
 
     const token = createJWT(user);
     const userWithoutPassword = exclude(user, ["password"]);

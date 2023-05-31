@@ -62,23 +62,23 @@ io.on("connection", (socket) => {
     socket.emit("chat/updateOnlineList", onlineListJSON);
   }
 
-  async function createChanel(channelName: string) {
-    const existChanel = await prisma.chanel.findUnique({
+  async function createChannel(channelName: string) {
+    const existChannel = await prisma.channel.findUnique({
       where: {
         name: channelName,
       },
     });
-    if (existChanel) {
+    if (existChannel) {
       socket.emit("chat/error", "该频道名已被使用");
       return;
     }
-    await prisma.chanel.create({
+    await prisma.channel.create({
       data: {
         name: channelName,
         userId: user.id,
       },
     });
-    updateChanels();
+    updateChannels();
   }
 
   async function updateUsers() {
@@ -86,9 +86,9 @@ io.on("connection", (socket) => {
     socket.emit("chat/updateUsers", users);
   }
 
-  async function updateChanels() {
-    const chanels = await prisma.chanel.findMany();
-    io.emit("chat/updateChanels", chanels);
+  async function updateChannels() {
+    const channels = await prisma.channel.findMany();
+    io.emit("chat/updateChannels", channels);
   }
   async function updatePrivateMessages(to: string) {
     const privateMessages = await prisma.privateMessage.findMany({
@@ -108,70 +108,67 @@ io.on("connection", (socket) => {
     socket.emit("chat/updatePrivateMessages", privateMessages);
   }
 
-  async function onEnterChanel(chanelId: string) {
-    await socket.join(chanelId);
-    const data = await io.in(chanelId).fetchSockets();
+  async function onEnterChannel(channelId: string) {
+    await socket.join(channelId);
+    const data = await io.in(channelId).fetchSockets();
     const users = data.map((socket) => {
       return JSON.parse(socket.handshake.auth.user) as User;
     });
 
+    socket.broadcast.to(channelId).emit("chat/enterChannel", user);
+    io.to(channelId).emit("chat/updateChannelUsers", users);
 
-    socket.broadcast.to(chanelId).emit("chat/enterChanel", user);
-    io.to(chanelId).emit("chat/updateChanelUsers", users);
-
-    const messages = await prisma.chanelMessage.findMany({
+    const messages = await prisma.channelMessage.findMany({
       where: {
-        toChanelId: chanelId,
+        toChannelId: channelId,
       },
     });
-    socket.emit("chat/updateChanelMessages", messages);
+    socket.emit("chat/updateChannelMessages", messages);
   }
 
-  async function onLeaveChanel(chanelId: string) {
-    await socket.leave(chanelId);
-    const data = await io.in(chanelId).fetchSockets();
+  async function onLeaveChannel(channelId: string) {
+    await socket.leave(channelId);
+    const data = await io.in(channelId).fetchSockets();
 
     const users = data.map((socket) => {
       return JSON.parse(socket.handshake.auth.user) as User;
     });
 
-
-
-    socket.broadcast.to(chanelId).emit("chat/leaveChanel", user);
-    socket.broadcast.to(chanelId).emit("chat/updateChanelUsers", users);
+    socket.broadcast.to(channelId).emit("chat/leaveChannel", user);
+    socket.broadcast.to(channelId).emit("chat/updateChannelUsers", users);
   }
 
-  async function onGetChanel(chanelId: string) {
-    const chanel = await prisma.chanel.findUnique({
+  async function onGetChannel(channelId: string) {
+    const channel = await prisma.channel.findUnique({
       where: {
-        id: chanelId,
+        id: channelId,
       },
     });
-    socket.emit("chat/getChanel", chanel);
+    socket.emit("chat/getChannel", channel);
   }
 
-  async function onChanelMessage({
-    chanelId,
+  async function onChannelMessage({
+    channelId,
     content,
   }: {
-    chanelId: string;
+    channelId: string;
     content: string;
   }) {
-    await prisma.chanelMessage.create({
+    await prisma.channelMessage.create({
       data: {
         fromUserId: user.id,
-        toChanelId: chanelId,
+        toChannelId: channelId,
         content,
       },
     });
 
-    const messages = await prisma.chanelMessage.findMany({
+    const messages = await prisma.channelMessage.findMany({
       where: {
-        toChanelId: chanelId,
+        toChannelId: channelId,
       },
     });
 
-    io.to(chanelId).emit("chat/updateChanelMessages", messages);
+    io.to(channelId).emit("chat/updateChannelMessages", messages);
   }
 
   const user = JSON.parse(socket.handshake.auth.user) as User;
@@ -181,9 +178,9 @@ io.on("connection", (socket) => {
   io.emit("chat/updateOnlineList", onlineListJSON);
 
   socket.on("chat/updateOnlineList", updateOnlineList);
-  socket.on("chat/createChanel", createChanel);
+  socket.on("chat/createChannel", createChannel);
   socket.on("chat/updateUsers", updateUsers);
-  socket.on("chat/updateChanels", updateChanels);
+  socket.on("chat/updateChannels", updateChannels);
   socket.on("chat/updatePrivateMessages", updatePrivateMessages);
   socket.on(
     "chat/privateMessage",
@@ -213,10 +210,10 @@ io.on("connection", (socket) => {
       io.to([to, user.id]).emit("chat/updatePrivateMessages", privateMessages);
     }
   );
-  socket.on("chat/enterChanel", onEnterChanel);
-  socket.on("chat/leaveChanel", onLeaveChanel);
-  socket.on("chat/getChanel", onGetChanel);
-  socket.on("chat/chanelMessage", onChanelMessage);
+  socket.on("chat/enterChannel", onEnterChannel);
+  socket.on("chat/leaveChannel", onLeaveChannel);
+  socket.on("chat/getChannel", onGetChannel);
+  socket.on("chat/channelMessage", onChannelMessage);
 
   socket.on("disconnect", () => {
     onlineList.delete(user);
