@@ -44,6 +44,7 @@ export const createNewUser: RequestHandler = async (req, res, next) => {
         username: req.body.username,
         password: await hashPassword(req.body.password),
         role: isAdmin ? "ADMIN" : "MEMBER",
+        avatar: req.body.avatar,
         privateRoom: {
           create: {},
         },

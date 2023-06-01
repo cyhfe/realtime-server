@@ -15,11 +15,13 @@ datasource db {
 }
 
 model User {
-  id              String           @id @default(uuid())
-  createdAt       DateTime         @default(now())
-  role            String           @default("MEMBER")
-  username        String           @unique
-  password        String
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  role      String   @default("MEMBER")
+  username  String   @unique
+  password  String
+  avatar    String
+
   channelMessages ChannelMessage[]
   channels        Channel[]
 

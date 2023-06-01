@@ -234,5 +234,6 @@ canvasSocket.on("connection", (socket) => {
   socket.on("changeStrokeColor", (data) =>
     socket.broadcast.emit("changeStrokeColor", data)
   );
+  socket.on("disconnect", () => {});
 });
 export default httpServer;

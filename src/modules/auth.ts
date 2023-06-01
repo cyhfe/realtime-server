@@ -20,6 +20,7 @@ export const createJWT = (user: User) => {
       id: user.id,
       username: user.username,
       role: user.role,
+      avatar: user.avatar,
     },
     JWT_SECRET
   );
