@@ -232,30 +232,24 @@ chatSocket.on("connection", (socket) => {
       },
     });
 
-    console.log(newMessageWithUser);
-
     chatSocket
       .to([to, user.id])
       .emit("chat/newPrivateMessage", newMessageWithUser);
+  }
 
-    const privateMessages = await prisma.privateMessage.findMany({
+  async function onUpdateToUser(toUserId: string) {
+    const user = await prisma.user.findUnique({
       where: {
-        OR: [
-          {
-            fromUserId: user.id,
-            toUserId: to,
-          },
-          {
-            fromUserId: to,
-            toUserId: user.id,
-          },
-        ],
+        id: toUserId,
       },
       select: {
-        from: true,
-        to: true,
+        id: true,
+        createdAt: true,
+        username: true,
+        avatar: true,
       },
     });
+    socket.emit("updateToUser", user);
   }
 
   const user = JSON.parse(socket.handshake.auth.user) as User;
@@ -269,6 +263,7 @@ chatSocket.on("connection", (socket) => {
   socket.on("chat/updateUsers", updateUsers);
   socket.on("chat/updateChannels", updateChannels);
   socket.on("updatePrivateMessages", updatePrivateMessages);
+  socket.on("updateToUser", onUpdateToUser);
   socket.on("chat/privateMessage", onPrivateMessage);
   socket.on("chat/enterChannel", onEnterChannel);
   socket.on("chat/leaveChannel", onLeaveChannel);
