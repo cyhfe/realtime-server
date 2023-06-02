@@ -306,12 +306,24 @@ chatSocket.on("connection", (socket) => {
 });
 
 const canvasSocket = io.of("/canvas");
-canvasSocket.on("connection", (socket) => {
+canvasSocket.on("connection", async (socket) => {
+  const sockets = await canvasSocket.fetchSockets();
+  const users = sockets.map((socket) => {
+    return JSON.parse(socket.handshake.auth.user) as User;
+  });
+  canvasSocket.emit("updateUsers", users);
+
   socket.on("drawing", (data) => socket.broadcast.emit("drawing", data));
   socket.on("clear", () => socket.broadcast.emit("clear"));
   socket.on("changeStrokeColor", (data) =>
     socket.broadcast.emit("changeStrokeColor", data)
   );
-  socket.on("disconnect", () => {});
+  socket.on("disconnect", async () => {
+    const sockets = await canvasSocket.fetchSockets();
+    const users = sockets.map((socket) => {
+      return JSON.parse(socket.handshake.auth.user) as User;
+    });
+    canvasSocket.emit("updateUsers", users);
+  });
 });
 export default httpServer;
