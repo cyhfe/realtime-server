@@ -25,8 +25,8 @@ model User {
   channelMessages ChannelMessage[]
   channels        Channel[]
 
-  privateRoom     PrivateRoom?
-  privateMessages PrivateMessage[]
+  sendMessages    PrivateMessage[] @relation("sendMessages")
+  recieveMessages PrivateMessage[] @relation("recieveMessages")
 }
 
 model ChannelMessage {
@@ -50,19 +50,11 @@ model Channel {
 }
 
 model PrivateMessage {
-  id         String      @id @default(uuid())
-  createdAt  DateTime    @default(now())
+  id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
   fromUserId String
-  from       User        @relation(fields: [fromUserId], references: [id], onDelete: Cascade)
+  from       User     @relation("sendMessages", fields: [fromUserId], references: [id], onDelete: Cascade)
   toUserId   String
-  to         PrivateRoom @relation(fields: [toUserId], references: [userId], onDelete: Cascade)
+  to         User     @relation("recieveMessages", fields: [toUserId], references: [id], onDelete: Cascade)
   content    String
-}
-
-model PrivateRoom {
-  id              String           @id @default(uuid())
-  createdAt       DateTime         @default(now())
-  userId          String           @unique
-  belongsTo       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  privateMessages PrivateMessage[]
 }

@@ -8,7 +8,7 @@ import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
 // Exclude keys from user
-function exclude<User, Key extends keyof User>(
+export function exclude<User, Key extends keyof User>(
   user: User,
   keys: Key[]
 ): Omit<User, Key> {
@@ -45,9 +45,6 @@ export const createNewUser: RequestHandler = async (req, res, next) => {
         password: await hashPassword(req.body.password),
         role: isAdmin ? "ADMIN" : "MEMBER",
         avatar: req.body.avatar,
-        privateRoom: {
-          create: {},
-        },
       },
     });
 
