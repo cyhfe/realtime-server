@@ -59,6 +59,8 @@ const onlineList = new Set<User>();
 const chatSocket = io.of("/chat");
 
 chatSocket.on("connection", (socket) => {
+  let channel: string | undefined;
+
   function updateOnlineList() {
     const onlineListJSON = JSON.stringify(Array.from(onlineList));
     socket.emit("chat/updateOnlineList", onlineListJSON);
@@ -131,9 +133,10 @@ chatSocket.on("connection", (socket) => {
   }
 
   async function onEnterChannel(channelId: string) {
+    channel = channelId;
     await socket.join(channelId);
-    const data = await chatSocket.in(channelId).fetchSockets();
-    const users = data.map((socket) => {
+    const sockets = await chatSocket.in(channelId).fetchSockets();
+    const users = sockets.map((socket) => {
       return JSON.parse(socket.handshake.auth.user) as User;
     });
 
@@ -144,11 +147,22 @@ chatSocket.on("connection", (socket) => {
       where: {
         toChannelId: channelId,
       },
+      include: {
+        from: {
+          select: {
+            id: true,
+            createdAt: true,
+            username: true,
+            avatar: true,
+          },
+        },
+      },
     });
     socket.emit("chat/updateChannelMessages", messages);
   }
 
   async function onLeaveChannel(channelId: string) {
+    channel = void 0;
     await socket.leave(channelId);
     const sockets = await chatSocket.in(channelId).fetchSockets();
 
@@ -176,7 +190,7 @@ chatSocket.on("connection", (socket) => {
     channelId: string;
     content: string;
   }) {
-    await prisma.channelMessage.create({
+    const newMessage = await prisma.channelMessage.create({
       data: {
         fromUserId: user.id,
         toChannelId: channelId,
@@ -184,13 +198,25 @@ chatSocket.on("connection", (socket) => {
       },
     });
 
-    const messages = await prisma.channelMessage.findMany({
+    const newMessageWithUser = await prisma.channelMessage.findUnique({
       where: {
-        toChannelId: channelId,
+        id: newMessage.id,
+      },
+      include: {
+        from: {
+          select: {
+            id: true,
+            createdAt: true,
+            username: true,
+            avatar: true,
+          },
+        },
       },
     });
 
-    chatSocket.to(channelId).emit("chat/updateChannelMessages", messages);
+    chatSocket
+      .to(channelId)
+      .emit("chat/updateChannelMessage", newMessageWithUser);
   }
 
   async function onPrivateMessage({
@@ -200,6 +226,7 @@ chatSocket.on("connection", (socket) => {
     content: string;
     to: string;
   }) {
+    if (!content) return;
     const newMessage = await prisma.privateMessage.create({
       data: {
         fromUserId: user.id,
@@ -274,6 +301,7 @@ chatSocket.on("connection", (socket) => {
     onlineList.delete(user);
     const onlineListJSON = JSON.stringify(Array.from(onlineList));
     chatSocket.emit("chat/updateOnlineList", onlineListJSON);
+    channel && onLeaveChannel(channel);
   });
 });
 
