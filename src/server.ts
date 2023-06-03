@@ -86,6 +86,17 @@ chatSocket.on("connection", (socket) => {
     updateChannels();
   }
 
+  async function onDeleteChannel(channelId: string) {
+    console.log("delete");
+    await prisma.channel.delete({
+      where: {
+        id: channelId,
+      },
+    });
+
+    updateChannels();
+  }
+
   async function updateUsers() {
     const users = await prisma.user.findMany();
     socket.emit("chat/updateUsers", users);
@@ -287,6 +298,7 @@ chatSocket.on("connection", (socket) => {
 
   socket.on("chat/updateOnlineList", updateOnlineList);
   socket.on("chat/createChannel", createChannel);
+  socket.on("deleteChannel", onDeleteChannel);
   socket.on("chat/updateUsers", updateUsers);
   socket.on("chat/updateChannels", updateChannels);
   socket.on("updatePrivateMessages", updatePrivateMessages);
