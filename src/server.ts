@@ -74,7 +74,7 @@ chatSocket.on("connection", (socket) => {
       },
     });
     if (existChannel) {
-      socket.emit("chat/error", "该频道名已被使用");
+      socket.emit("error", "该频道名已被使用");
       return;
     }
     await prisma.channel.create({
@@ -297,7 +297,7 @@ chatSocket.on("connection", (socket) => {
   chatSocket.emit("chat/updateOnlineList", onlineListJSON);
 
   socket.on("chat/updateOnlineList", updateOnlineList);
-  socket.on("chat/createChannel", createChannel);
+  socket.on("createChannel", createChannel);
   socket.on("deleteChannel", onDeleteChannel);
   socket.on("chat/updateUsers", updateUsers);
   socket.on("chat/updateChannels", updateChannels);
