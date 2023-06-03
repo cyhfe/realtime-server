@@ -8,8 +8,6 @@ import { body } from "express-validator";
 import { inputValidate } from "./utils/inputValidate";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import jwt from "jsonwebtoken";
-import { log } from "console";
 import prisma from "./db";
 
 const app = express();
@@ -67,7 +65,6 @@ chatSocket.on("connection", (socket) => {
   }
 
   async function createChannel(channelName: string) {
-    console.log("create");
     const existChannel = await prisma.channel.findUnique({
       where: {
         name: channelName,
@@ -87,13 +84,17 @@ chatSocket.on("connection", (socket) => {
   }
 
   async function onDeleteChannel(channelId: string) {
-    console.log("delete");
-    await prisma.channel.delete({
-      where: {
-        id: channelId,
-      },
-    });
+    try {
+      await prisma.channel.delete({
+        where: {
+          id: channelId,
+        },
+      });
+    } catch (error) {
+      socket.emit("error", "删除失败");
+    }
 
+    socket.emit("deleteChannel");
     updateChannels();
   }
 
@@ -201,6 +202,10 @@ chatSocket.on("connection", (socket) => {
     channelId: string;
     content: string;
   }) {
+    if (!content) {
+      socket.emit("error", "内容不能为空");
+      return;
+    }
     const newMessage = await prisma.channelMessage.create({
       data: {
         fromUserId: user.id,
