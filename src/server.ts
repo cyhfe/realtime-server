@@ -51,6 +51,7 @@ const io = new Server(httpServer, {
 interface User {
   username: string;
   id: string;
+  avatar: string;
 }
 const onlineList = new Set<User>();
 
@@ -58,10 +59,8 @@ const chatSocket = io.of("/chat");
 
 chatSocket.on("connection", (socket) => {
   let channel: string | undefined;
-
   function updateOnlineList() {
-    const onlineListJSON = JSON.stringify(Array.from(onlineList));
-    socket.emit("chat/updateOnlineList", onlineListJSON);
+    socket.emit("chat/updateOnlineList", Array.from(onlineList));
   }
 
   async function createChannel(channelName: string) {
@@ -149,7 +148,7 @@ chatSocket.on("connection", (socket) => {
     await socket.join(channelId);
     const sockets = await chatSocket.in(channelId).fetchSockets();
     const users = sockets.map((socket) => {
-      return JSON.parse(socket.handshake.auth.user) as User;
+      return socket.handshake.auth.user as User;
     });
 
     socket.broadcast.to(channelId).emit("chat/enterChannel", user);
@@ -179,7 +178,7 @@ chatSocket.on("connection", (socket) => {
     const sockets = await chatSocket.in(channelId).fetchSockets();
 
     const users = sockets.map((socket) => {
-      return JSON.parse(socket.handshake.auth.user) as User;
+      return socket.handshake.auth.user as User;
     });
 
     socket.broadcast.to(channelId).emit("chat/leaveChannel", user);
@@ -295,11 +294,11 @@ chatSocket.on("connection", (socket) => {
     socket.emit("updateToUser", user);
   }
 
-  const user = JSON.parse(socket.handshake.auth.user) as User;
+  const user = socket.handshake.auth.user as User;
   onlineList.add(user);
   socket.join(user.id);
-  const onlineListJSON = JSON.stringify(Array.from(onlineList));
-  chatSocket.emit("chat/updateOnlineList", onlineListJSON);
+  console.log(onlineList);
+  chatSocket.emit("chat/updateOnlineList", Array.from(onlineList));
 
   socket.on("chat/updateOnlineList", updateOnlineList);
   socket.on("createChannel", createChannel);
@@ -316,8 +315,7 @@ chatSocket.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     onlineList.delete(user);
-    const onlineListJSON = JSON.stringify(Array.from(onlineList));
-    chatSocket.emit("chat/updateOnlineList", onlineListJSON);
+    chatSocket.emit("chat/updateOnlineList", Array.from(onlineList));
     channel && onLeaveChannel(channel);
   });
 });
@@ -326,7 +324,7 @@ const canvasSocket = io.of("/canvas");
 canvasSocket.on("connection", async (socket) => {
   const sockets = await canvasSocket.fetchSockets();
   const users = sockets.map((socket) => {
-    return JSON.parse(socket.handshake.auth.user) as User;
+    return socket.handshake.auth.user as User;
   });
   canvasSocket.emit("updateUsers", users);
 
@@ -338,7 +336,7 @@ canvasSocket.on("connection", async (socket) => {
   socket.on("disconnect", async () => {
     const sockets = await canvasSocket.fetchSockets();
     const users = sockets.map((socket) => {
-      return JSON.parse(socket.handshake.auth.user) as User;
+      return socket.handshake.auth.user as User;
     });
     canvasSocket.emit("updateUsers", users);
   });
