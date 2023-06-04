@@ -7,9 +7,10 @@ RUN npm install pm2 -g
 COPY package.json package*.json ./
 RUN npm install
 
-COPY . .
+COPY prisma .
 RUN npx prisma migrate deploy
 RUN npx prisma generate
+COPY . .
 RUN npm run build
 CMD ["pm2-runtime", "dist/index.js"]
 EXPOSE 4000

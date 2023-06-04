@@ -10,7 +10,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - ADMIN_SECRET=${ADMIN_SECRET}
     volumes:
-      - api:/app/prisma
+      - realtime-db:/app/db
 
 volumes:
-  api:
+  realtime-db:
