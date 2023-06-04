@@ -8,6 +8,7 @@ COPY package.json package*.json ./
 RUN npm install
 
 COPY prisma .
+COPY .env .
 RUN npx prisma migrate deploy
 RUN npx prisma generate
 COPY . .
