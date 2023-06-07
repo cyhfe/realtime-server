@@ -1,5 +1,6 @@
 services:
   app:
+    restart: always
     build: .
     ports:
       - 4000:4000
@@ -10,7 +11,7 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - ADMIN_SECRET=${ADMIN_SECRET}
     volumes:
-      - realtime-db:/app/db
+      - realtime-db:/db
 
 volumes:
   realtime-db:
