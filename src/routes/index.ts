@@ -5,6 +5,7 @@ import {
   getAllConversations,
   createConversation,
 } from "../handlers/conversation";
+import { getAllMessages, sendMessage } from "../handlers/message";
 
 const router = Router();
 
@@ -25,5 +26,12 @@ router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 router.get("/conversation", getAllConversations);
 
 router.post("/conversation", createConversation);
+
+/**
+ * Message
+ */
+router.get("/message", getAllMessages);
+
+router.post("/message", sendMessage);
 
 export default router;

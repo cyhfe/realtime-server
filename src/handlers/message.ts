@@ -1,18 +1,28 @@
 import { RequestHandler } from "express";
 import prisma from "../db";
+import axios from "axios";
+const API_COMPLETIONS = "https://api.openai.com/v1/completions";
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
+import { Configuration, OpenAIApi } from "openai";
+
+const configuration = new Configuration({
+  apiKey: OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
 
 export const getAllMessages: RequestHandler = async (req, res, next) => {
   const user = req.user;
-  const params = req.params;
-  console.log(params);
-  if (!user) {
-    return res.status(500);
+  const conversationId = req.query.conversationId as string;
+
+  if (!user || !conversationId) {
+    return res.status(400);
   }
   try {
     const messages = await prisma.aiMessage.findMany({
-      // where: {
-      //   conversationId:
-      // },
+      where: {
+        conversationId: conversationId,
+      },
     });
     res.status(200);
     res.json({
@@ -23,23 +33,53 @@ export const getAllMessages: RequestHandler = async (req, res, next) => {
   }
 };
 
-export const createConversation: RequestHandler = async (req, res, next) => {
+enum Role {
+  USER = "user",
+  ASSISTANT = "assistant",
+  SYSTEM = "system",
+}
+
+export const sendMessage: RequestHandler = async (req, res, next) => {
   const user = req.user;
-  const { name } = req.body;
+  const { content, conversationId } = req.body as {
+    content: string;
+    conversationId: string;
+  };
   if (!user) {
     return res.status(500);
   }
   try {
-    const conversation = await prisma.conversation.create({
+    const completion = await openai.createChatCompletion({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: Role.USER, content }],
+    });
+    await prisma.aiMessage.create({
       data: {
-        name,
-        userId: String(user.id),
+        conversationId,
+        content,
+        role: Role.USER,
+      },
+    });
+
+    const aiContent = completion.data.choices[0].message?.content;
+    if (!aiContent) {
+      return res.status(500);
+    }
+    await prisma.aiMessage.create({
+      data: {
+        conversationId,
+        content: aiContent,
+        role: Role.ASSISTANT,
+      },
+    });
+    const messages = await prisma.aiMessage.findMany({
+      where: {
+        conversationId,
       },
     });
     res.status(200);
-    console.log(conversation);
     res.json({
-      conversation,
+      messages,
     });
   } catch (error) {
     next(error);
