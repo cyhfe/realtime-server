@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from "express";
-import router from "./routes/api";
+import router from "./routes";
 import morgan from "morgan";
 import cors from "cors";
 import { createNewUser, signin, me } from "./handlers/user";

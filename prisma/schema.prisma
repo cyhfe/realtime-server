@@ -27,6 +27,7 @@ model User {
 
   sendMessages    PrivateMessage[] @relation("sendMessages")
   recieveMessages PrivateMessage[] @relation("recieveMessages")
+  conversations   Conversation[]
 }
 
 model ChannelMessage {
@@ -57,4 +58,22 @@ model PrivateMessage {
   toUserId   String
   to         User     @relation("recieveMessages", fields: [toUserId], references: [id], onDelete: Cascade)
   content    String
+}
+
+model AiMessage {
+  id             String       @id @default(uuid())
+  createdAt      DateTime     @default(now())
+  role           String
+  content        String
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+}
+
+model Conversation {
+  id        String      @id @default(uuid())
+  createdAt DateTime    @default(now())
+  name      String
+  aiMessage AiMessage[]
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
 }
