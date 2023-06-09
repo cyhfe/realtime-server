@@ -6,6 +6,7 @@ import {
   createConversation,
 } from "../handlers/conversation";
 import { getAllMessages, sendMessage } from "../handlers/message";
+import { handleGeneration } from "../handlers/images";
 
 const router = Router();
 
@@ -33,5 +34,11 @@ router.post("/conversation", createConversation);
 router.get("/message", getAllMessages);
 
 router.post("/message", sendMessage);
+
+/**
+ * images
+ */
+
+router.post("/images/generations", handleGeneration);
 
 export default router;
