@@ -10,7 +10,7 @@ export const handleGeneration: RequestHandler = async (req, res, next) => {
     const response = await openai.createImage({
       prompt,
       n: 1,
-      size: "512x512",
+      size: "1024x1024",
       response_format: "b64_json",
       user: user.username,
     });
