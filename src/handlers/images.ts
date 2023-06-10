@@ -4,7 +4,8 @@ import openai from "../openai";
 export const handleGeneration: RequestHandler = async (req, res, next) => {
   const user = req.user;
   if (!user) {
-    return res.status(401);
+    res.status(401);
+    return res.end();
   }
   const { prompt } = req.body as { prompt: string };
   try {
@@ -21,6 +22,7 @@ export const handleGeneration: RequestHandler = async (req, res, next) => {
       b64_json: b64_json,
     });
   } catch (error) {
+    console.log(error);
     next(error);
   }
 };
