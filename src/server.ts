@@ -35,23 +35,6 @@ app.post("/signin", signin);
 
 app.post("/me", body(["token"]).notEmpty(), inputValidate, me);
 
-app.post("/chatgpt", async (req, res) => {
-  try {
-    const response = await openai.createCompletion({
-      model: "text-davinci-003",
-      prompt: "Say this is a test",
-      max_tokens: 7,
-      temperature: 0,
-    });
-
-    console.log(response);
-    res.json(response);
-  } catch (error) {
-    console.log(error);
-    res.json(500);
-  }
-});
-
 app.use("/api", protect, router);
 
 app.use("*", (req, res) => {

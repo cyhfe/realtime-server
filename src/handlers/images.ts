@@ -58,3 +58,57 @@ export const handleVariationsUpload: RequestHandler = async (
     next(error);
   }
 };
+
+export const handleEditUpload: RequestHandler = async (req, res, next) => {
+  const user = req.user;
+  if (!user) {
+    return res.status(401);
+  }
+
+  const prompt = req.body.prompt;
+  console.log(prompt);
+  //@ts-ignore
+  const file = req.files?.["file"]?.[0]?.buffer;
+  file.name = "image.png";
+  console.log(file);
+  //@ts-ignore
+  const mask = req.files?.["mask"]?.[0]?.buffer;
+  console.log(mask);
+  mask.name = "mask.png";
+
+  if (!file || !mask) {
+    res.sendStatus(400);
+  }
+
+  try {
+    // const response = await openai.createImageEdit(
+    //   fs.createReadStream("sunlit_lounge.png"),
+    //   fs.createReadStream("mask.png"),
+    //   "A sunlit indoor lounge area with a pool containing a flamingo",
+    //   1,
+    //   "1024x1024"
+    // );
+    const response = await openai.createImageEdit(
+      file,
+      prompt,
+      mask,
+      1,
+      "512x512",
+      "b64_json",
+      user.username
+    );
+    console.log(response);
+    const b64_json = response.data.data[0].b64_json;
+    res.json({
+      b64_json,
+    });
+  } catch (error: any) {
+    if (error.response) {
+      console.log(error.response.status);
+      console.log(error.response.data);
+    } else {
+      console.log(error.message);
+    }
+    next(error);
+  }
+};

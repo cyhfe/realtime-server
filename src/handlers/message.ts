@@ -43,6 +43,8 @@ export const sendMessage: RequestHandler = async (req, res, next) => {
     const completion = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
       messages: [{ role: Role.USER, content }],
+      max_tokens: 500,
+      temperature: 1,
     });
     await prisma.aiMessage.create({
       data: {

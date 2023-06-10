@@ -6,7 +6,11 @@ import {
   createConversation,
 } from "../handlers/conversation";
 import { getAllMessages, sendMessage } from "../handlers/message";
-import { handleGeneration, handleVariationsUpload } from "../handlers/images";
+import {
+  handleEditUpload,
+  handleGeneration,
+  handleVariationsUpload,
+} from "../handlers/images";
 import multer from "multer";
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -48,6 +52,12 @@ router.post(
   "/images/variations/upload",
   upload.single("file"),
   handleVariationsUpload
+);
+
+router.post(
+  "/images/edit/upload",
+  upload.fields([{ name: "file" }, { name: "mask" }]),
+  handleEditUpload
 );
 
 export default router;
