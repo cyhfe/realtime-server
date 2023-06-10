@@ -6,7 +6,10 @@ import {
   createConversation,
 } from "../handlers/conversation";
 import { getAllMessages, sendMessage } from "../handlers/message";
-import { handleGeneration } from "../handlers/images";
+import { handleGeneration, handleVariationsUpload } from "../handlers/images";
+import multer from "multer";
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 const router = Router();
 
@@ -40,5 +43,11 @@ router.post("/message", sendMessage);
  */
 
 router.post("/images/generations", handleGeneration);
+
+router.post(
+  "/images/variations/upload",
+  upload.single("file"),
+  handleVariationsUpload
+);
 
 export default router;
