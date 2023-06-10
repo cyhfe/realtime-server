@@ -81,13 +81,6 @@ export const handleEditUpload: RequestHandler = async (req, res, next) => {
   }
 
   try {
-    // const response = await openai.createImageEdit(
-    //   fs.createReadStream("sunlit_lounge.png"),
-    //   fs.createReadStream("mask.png"),
-    //   "A sunlit indoor lounge area with a pool containing a flamingo",
-    //   1,
-    //   "1024x1024"
-    // );
     const response = await openai.createImageEdit(
       file,
       prompt,
