@@ -39,11 +39,31 @@ export const sendMessage: RequestHandler = async (req, res, next) => {
   if (!user) {
     return res.status(500);
   }
+
   try {
+    const context = await prisma.aiMessage.findMany({
+      where: {
+        conversationId,
+      },
+      take: 10,
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        role: true,
+        content: true,
+      },
+    });
+
+    const chatContext = [...context, { role: Role.USER, content }] as {
+      role: Role;
+      content: string;
+    }[];
+
     const completion = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: Role.USER, content }],
-      max_tokens: 500,
+      model: "gpt-3.5-turbo-0613",
+      messages: chatContext,
+      max_tokens: 1500,
       temperature: 1,
     });
     await prisma.aiMessage.create({

@@ -5,17 +5,8 @@ import cors from "cors";
 import { createNewUser, signin, me } from "./handlers/user";
 import { protect } from "./modules/auth";
 import { body } from "express-validator";
-import { inputValidate } from "./utils/inputValidate";
+import { validateErrorHandler } from "./utils/validate";
 import { createServer } from "http";
-
-import { Configuration, OpenAIApi } from "openai";
-
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-
-const configuration = new Configuration({
-  apiKey: OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
 
 const app = express();
 
@@ -24,16 +15,26 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// createNewUser
 app.post(
   "/user",
-  body(["password", "username"]).notEmpty(),
-  inputValidate,
+  body("username")
+    .trim()
+    .notEmpty()
+    .matches(/^[\u4e00-\u9fa5a-zA-Z0-9]{3,12}$/)
+    .withMessage("用户名必须是3-12位中文、英文、数字"),
+  body("password")
+    .trim()
+    .notEmpty()
+    .isLength({ min: 3, max: 12 })
+    .withMessage("密码必须是3-12位"),
+  validateErrorHandler,
   createNewUser
 );
 
 app.post("/signin", signin);
 
-app.post("/me", body(["token"]).notEmpty(), inputValidate, me);
+app.post("/me", body("token").notEmpty(), validateErrorHandler, me);
 
 app.use("/api", protect, router);
 
