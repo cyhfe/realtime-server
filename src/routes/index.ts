@@ -4,6 +4,7 @@ import { getAllUsers, getUserById } from "../handlers/user";
 import {
   getAllConversations,
   createConversation,
+  deleteConversation,
 } from "../handlers/conversation";
 import { getAllMessages, sendMessage } from "../handlers/message";
 import {
@@ -34,6 +35,8 @@ router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 router.get("/conversation", getAllConversations);
 
 router.post("/conversation", createConversation);
+
+router.delete("/conversation/:conversationId", deleteConversation);
 
 /**
  * Message

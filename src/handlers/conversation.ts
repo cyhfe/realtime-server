@@ -43,3 +43,24 @@ export const createConversation: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
+
+export const deleteConversation: RequestHandler = async (req, res, next) => {
+  const user = req.user;
+  const { conversationId } = req.params
+  if (!user || !conversationId) {
+    return res.status(400);
+  }
+  try {
+    await prisma.conversation.delete({
+      where: {
+        id: conversationId,
+      },
+    });
+    res.status(200);
+    res.json({
+      message: "Conversation deleted",
+    });
+  } catch (error) {
+    next(error);
+  }
+}
