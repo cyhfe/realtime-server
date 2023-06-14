@@ -19,5 +19,5 @@ jobs:
           echo JWT_SECRET=${{secrets.JWT_SECRET}} >> .env
           echo ADMIN_SECRET=${{secrets.ADMIN_SECRET}} >> .env
           echo OPENAI_API_KEY=${{secrets.OPENAI_API_KEY}} >> .env
-          sudo docker compose config
-          sudo docker compose -p api up --build -d
+          docker compose config
+          docker compose -p api up --build -d
