@@ -5,15 +5,13 @@ import openai from "../openai";
 export const getAllMessages: RequestHandler = async (req, res, next) => {
   const user = req.user;
   const conversationId = req.query.conversationId as string;
-  const offset = Number(req.query.offset) || 0;
+  const skip = Number(req.query.skip) || 0;
 
   if (!user || !conversationId) {
     return res.status(400);
   }
   try {
-    console.log(offset);
     const take = 10;
-    const skip = offset * take;
     const [messages, count] = await prisma.$transaction([
       prisma.aiMessage.findMany({
         where: {
@@ -31,7 +29,6 @@ export const getAllMessages: RequestHandler = async (req, res, next) => {
         },
       }),
     ]);
-    // console.log(messages, count);
 
     messages.reverse();
 
@@ -87,7 +84,7 @@ export const sendMessage: RequestHandler = async (req, res, next) => {
       max_tokens: 1500,
       temperature: 1,
     });
-    await prisma.aiMessage.create({
+    const question = await prisma.aiMessage.create({
       data: {
         conversationId,
         content,
@@ -99,21 +96,23 @@ export const sendMessage: RequestHandler = async (req, res, next) => {
     if (!aiContent) {
       return res.status(500);
     }
-    await prisma.aiMessage.create({
+    const anwser = await prisma.aiMessage.create({
       data: {
         conversationId,
         content: aiContent,
         role: Role.ASSISTANT,
       },
     });
-    const messages = await prisma.aiMessage.findMany({
+    const count = await prisma.aiMessage.count({
       where: {
         conversationId,
       },
     });
+    const messages = [question, anwser];
     res.status(200);
     res.json({
       messages,
+      count,
     });
   } catch (error) {
     next(error);
