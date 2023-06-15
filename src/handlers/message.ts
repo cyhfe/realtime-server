@@ -5,19 +5,40 @@ import openai from "../openai";
 export const getAllMessages: RequestHandler = async (req, res, next) => {
   const user = req.user;
   const conversationId = req.query.conversationId as string;
+  const offset = Number(req.query.offset) || 0;
 
   if (!user || !conversationId) {
     return res.status(400);
   }
   try {
-    const messages = await prisma.aiMessage.findMany({
-      where: {
-        conversationId: conversationId,
-      },
-    });
+    console.log(offset);
+    const take = 10;
+    const skip = offset * take;
+    const [messages, count] = await prisma.$transaction([
+      prisma.aiMessage.findMany({
+        where: {
+          conversationId,
+        },
+        skip,
+        take,
+        orderBy: {
+          createdAt: "desc",
+        },
+      }),
+      prisma.aiMessage.count({
+        where: {
+          conversationId,
+        },
+      }),
+    ]);
+    // console.log(messages, count);
+
+    messages.reverse();
+
     res.status(200);
     res.json({
       messages,
+      count,
     });
   } catch (error) {
     next(error);
