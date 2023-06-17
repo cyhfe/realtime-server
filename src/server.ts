@@ -6,7 +6,7 @@ import { createNewUser, signin, me } from "./handlers/user";
 import { protect } from "./modules/auth";
 import { body } from "express-validator";
 import { validateErrorHandler } from "./utils/validate";
-import { createServer } from "http";
+import { createServer } from "https";
 
 const app = express();
 
