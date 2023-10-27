@@ -84,6 +84,7 @@ export const sendMessage: RequestHandler = async (req, res, next) => {
       max_tokens: 1500,
       temperature: 1,
     });
+
     const question = await prisma.aiMessage.create({
       data: {
         conversationId,
